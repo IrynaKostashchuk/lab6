@@ -25,7 +25,6 @@ public class RSAEncryption {
         return sum.mod(n);
     }
 
-
     public static BigInteger generateDigitalSignature(String message) {
         BigInteger hashedMessage = hashFunction(message);
         return hashedMessage.modPow(d, n);
@@ -55,7 +54,7 @@ public class RSAEncryption {
             bw.write(encryptedMessage.toString());
             bw.close();
 
-            
+
             BigInteger digitalSignature = generateDigitalSignature(message);
             FileOutputStream fos2 = new FileOutputStream("digital_signature.txt");
             BufferedWriter bw2 = new BufferedWriter(new OutputStreamWriter(fos2, StandardCharsets.UTF_8));
