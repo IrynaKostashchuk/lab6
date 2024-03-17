@@ -17,15 +17,16 @@ public class RSAEncryption {
     }
 
 
-    public static BigInteger hashFunction(String message) {
-        BigInteger sum = BigInteger.ZERO;
-        for (char c : message.toCharArray()) {
-            sum = sum.add(BigInteger.valueOf((int) c));
-        }
+    public static BigInteger hashFunction(int message) {
+//        BigInteger sum = BigInteger.ZERO;
+//        for (char c : message.toCharArray()) {
+//            sum = sum.add(BigInteger.valueOf((int) c));
+//        }
+        BigInteger sum = BigInteger.valueOf(message);
         return sum.mod(n);
     }
 
-    public static BigInteger generateDigitalSignature(String message) {
+    public static BigInteger generateDigitalSignature(int message) {
         BigInteger hashedMessage = hashFunction(message);
         return hashedMessage.modPow(d, n);
     }
@@ -42,11 +43,11 @@ public class RSAEncryption {
             while ((line = br.readLine()) != null) {
                 messageBuilder.append(line);
             }
-            String message = messageBuilder.toString();
+            int message = Integer.parseInt(messageBuilder.toString());
             br.close();
 
 
-            BigInteger encryptedMessage = encrypt(new BigInteger(message.getBytes()));
+            BigInteger encryptedMessage = encrypt(BigInteger.valueOf(message));
 
 
             FileOutputStream fos = new FileOutputStream("encrypted_message.txt");

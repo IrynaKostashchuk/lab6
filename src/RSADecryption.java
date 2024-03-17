@@ -7,6 +7,8 @@ public class RSADecryption {
     private static final BigInteger n = new BigInteger("33"); // публічний ключ n
     private static final BigInteger d = new BigInteger("3");  // приватний ключ d
 
+    private static final BigInteger e = new BigInteger("7");
+
     // Метод для розшифрування повідомлення
     public static String decrypt(BigInteger encryptedMessage) {
         BigInteger decryptedMessageBigInt = encryptedMessage.modPow(d, n);
@@ -14,18 +16,20 @@ public class RSADecryption {
     }
 
     // Метод для перевірки підпису
-    public static boolean verifySignature(BigInteger receivedSignature, String decryptedMessage) {
-        BigInteger expectedHash = new BigInteger(hashFunction(decryptedMessage).toByteArray());
-        BigInteger decryptedSignature = receivedSignature.modPow(d, n);
+    public static boolean verifySignature(BigInteger receivedSignature, BigInteger decryptedMessage) {
+        BigInteger expectedHash = hashFunction(decryptedMessage);
+        BigInteger decryptedSignature = receivedSignature.modPow(e, n);
+        System.out.println(expectedHash + " " + decryptedSignature);
         return decryptedSignature.equals(expectedHash);
     }
 
     // Хеш-функція, яка обчислює хеш повідомлення
-    public static BigInteger hashFunction(String message) {
-        BigInteger sum = BigInteger.ZERO;
-        for (char c : message.toCharArray()) {
-            sum = sum.add(BigInteger.valueOf((int) c));
-        }
+    public static BigInteger hashFunction(BigInteger message) {
+//        BigInteger sum = BigInteger.ZERO;
+//        for (char c : message.toCharArray()) {
+//            sum = sum.add(BigInteger.valueOf((int) c));
+//        }
+        BigInteger sum = message;
         return sum.mod(n);
     }
 
@@ -43,9 +47,10 @@ public class RSADecryption {
 
             // Розшифрування повідомлення
             String decryptedMessage = decrypt(encryptedMessage);
+            System.out.println(decryptedMessage);
 
             // Перевірка підпису
-            boolean signatureVerified = verifySignature(receivedSignature, decryptedMessage);
+            boolean signatureVerified = verifySignature(receivedSignature, BigInteger.valueOf(Integer.valueOf(decryptedMessage)));
 
             if (signatureVerified) {
                 System.out.println("Digital signature verified. The message is authentic.");
