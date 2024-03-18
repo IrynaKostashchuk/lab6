@@ -4,56 +4,65 @@ import java.nio.charset.StandardCharsets;
 
 public class RSADecryption {
 
-    private static final BigInteger n = new BigInteger("33"); // публічний ключ n
-    private static final BigInteger d = new BigInteger("3");  // приватний ключ d
-
+    private static final BigInteger n = new BigInteger("33"); // public key n
+    private static final BigInteger d = new BigInteger("3");  // private key d
     private static final BigInteger e = new BigInteger("7");
 
-    // Метод для розшифрування повідомлення
-    public static String decrypt(BigInteger encryptedMessage) {
-        BigInteger decryptedMessageBigInt = encryptedMessage.modPow(d, n);
-        return new String(String.valueOf(decryptedMessageBigInt));
+    // Method for decrypting the message
+    public static BigInteger[] decrypt(BigInteger[] encryptedNumbers) {
+        BigInteger[] decryptedNumbers = new BigInteger[encryptedNumbers.length];
+        for (int i = 0; i < encryptedNumbers.length; i++) {
+            decryptedNumbers[i] = encryptedNumbers[i].modPow(d, n);
+        }
+        return decryptedNumbers;
     }
 
-    // Метод для перевірки підпису
-    public static boolean verifySignature(BigInteger receivedSignature, BigInteger decryptedMessage) {
-        BigInteger expectedHash = hashFunction(decryptedMessage);
+    // Method for verifying the signature
+    public static boolean verifySignature(BigInteger receivedSignature, BigInteger[] decryptedNumbers) {
+        BigInteger expectedHash = hashFunction(decryptedNumbers);
         BigInteger decryptedSignature = receivedSignature.modPow(e, n);
-        System.out.println(expectedHash + " " + decryptedSignature);
         return decryptedSignature.equals(expectedHash);
     }
 
-    // Хеш-функція, яка обчислює хеш повідомлення
-    public static BigInteger hashFunction(BigInteger message) {
-//        BigInteger sum = BigInteger.ZERO;
-//        for (char c : message.toCharArray()) {
-//            sum = sum.add(BigInteger.valueOf((int) c));
-//        }
-        BigInteger sum = message;
+    // Hash function that computes the hash of the sum of decrypted numbers
+    public static BigInteger hashFunction(BigInteger[] numbers) {
+        BigInteger sum = BigInteger.ZERO;
+        for (BigInteger number : numbers) {
+            sum = sum.add(number);
+        }
         return sum.mod(n);
     }
 
     public static void main(String[] args) {
         try {
-            // Читання зашифрованого повідомлення з файлу
+            // Reading the encrypted numbers from the file
             BufferedReader br = new BufferedReader(new FileReader("encrypted_message.txt"));
-            BigInteger encryptedMessage = new BigInteger(br.readLine());
+            String[] encryptedNumbersString = br.readLine().split("\\s+");
             br.close();
 
-            // Читання цифрового підпису з файлу
+            // Converting the encrypted numbers to BigInteger array
+            BigInteger[] encryptedNumbers = new BigInteger[encryptedNumbersString.length];
+            for (int i = 0; i < encryptedNumbersString.length; i++) {
+                encryptedNumbers[i] = new BigInteger(encryptedNumbersString[i]);
+            }
+
+            // Reading the digital signature from the file
             br = new BufferedReader(new FileReader("digital_signature.txt"));
             BigInteger receivedSignature = new BigInteger(br.readLine());
             br.close();
 
-            // Розшифрування повідомлення
-            String decryptedMessage = decrypt(encryptedMessage);
-            System.out.println(decryptedMessage);
+            // Decrypting the numbers
+            BigInteger[] decryptedNumbers = decrypt(encryptedNumbers);
 
-            // Перевірка підпису
-            boolean signatureVerified = verifySignature(receivedSignature, BigInteger.valueOf(Integer.valueOf(decryptedMessage)));
+            // Verifying the signature
+            boolean signatureVerified = verifySignature(receivedSignature, decryptedNumbers);
 
             if (signatureVerified) {
                 System.out.println("Digital signature verified. The message is authentic.");
+                System.out.println("Decrypted numbers:");
+                for (BigInteger num : decryptedNumbers) {
+                    System.out.print(num + " ");
+                }
             } else {
                 System.out.println("Digital signature verification failed. The message may have been tampered with.");
             }

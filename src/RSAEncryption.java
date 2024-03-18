@@ -1,9 +1,7 @@
 import java.io.*;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-
 public class RSAEncryption {
-
 
     private static final BigInteger p = new BigInteger("3");
     private static final BigInteger q = new BigInteger("11");
@@ -11,52 +9,47 @@ public class RSAEncryption {
     private static final BigInteger e = new BigInteger("7");
     private static final BigInteger d = new BigInteger("3");
 
-
     public static BigInteger encrypt(BigInteger message) {
         return message.modPow(e, n);
     }
 
-
-    public static BigInteger hashFunction(int message) {
-//        BigInteger sum = BigInteger.ZERO;
-//        for (char c : message.toCharArray()) {
-//            sum = sum.add(BigInteger.valueOf((int) c));
-//        }
-        BigInteger sum = BigInteger.valueOf(message);
+    public static BigInteger hashFunction(String[] numbers) {
+        BigInteger sum = BigInteger.ZERO;
+        for (String number : numbers) {
+            sum = sum.add(new BigInteger(number));
+        }
         return sum.mod(n);
     }
 
-    public static BigInteger generateDigitalSignature(int message) {
-        BigInteger hashedMessage = hashFunction(message);
+    public static BigInteger generateDigitalSignature(String[] numbers) {
+        BigInteger hashedMessage = hashFunction(numbers);
         return hashedMessage.modPow(d, n);
     }
 
     public static void main(String[] args) {
         try {
-
             File file = new File("input.txt");
             FileInputStream fis = new FileInputStream(file);
             InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
             BufferedReader br = new BufferedReader(isr);
-            StringBuilder messageBuilder = new StringBuilder();
-            String line;
-            while ((line = br.readLine()) != null) {
-                messageBuilder.append(line);
+
+            String line = br.readLine();
+            String[] numbers = line.split("\\s+"); // Split input line by whitespace
+
+            BigInteger[] encryptedNumbers = new BigInteger[numbers.length];
+            for (int i = 0; i < numbers.length; i++) {
+                encryptedNumbers[i] = encrypt(new BigInteger(numbers[i])); // Encrypt each number
             }
-            int message = Integer.parseInt(messageBuilder.toString());
-            br.close();
-
-
-            BigInteger encryptedMessage = encrypt(BigInteger.valueOf(message));
-
 
             FileOutputStream fos = new FileOutputStream("encrypted_message.txt");
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos, StandardCharsets.UTF_8));
-            bw.write(encryptedMessage.toString());
+            for (BigInteger encryptedNumber : encryptedNumbers) {
+                bw.write(encryptedNumber.toString() + " ");
+            }
             bw.close();
 
+            BigInteger digitalSignature = generateDigitalSignature(numbers);
 
-            BigInteger digitalSignature = generateDigitalSignature(message);
             FileOutputStream fos2 = new FileOutputStream("digital_signature.txt");
             BufferedWriter bw2 = new BufferedWriter(new OutputStreamWriter(fos2, StandardCharsets.UTF_8));
             bw2.write(digitalSignature.toString());
